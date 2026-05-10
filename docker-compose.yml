@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Management UI
+    networks:
+      - app-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  inventory-service:
+    build:
+      context: ./inventory-service
+      dockerfile: Dockerfile
+    container_name: inventory-service
+    environment:
+      RABBITMQ_URI: amqp://guest:guest@rabbitmq:5672/
+    ports:
+      - "50051:50051"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: order-service
+    environment:
+      RABBITMQ_URI: amqp://guest:guest@rabbitmq:5672/
+      INVENTORY_SERVICE_HOST: inventory-service
+      INVENTORY_SERVICE_PORT: 50051
+    ports:
+      - "8080:8080"
+    depends_on:
+      - rabbitmq
+      - inventory-service
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

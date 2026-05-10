@@ -1,0 +1,79 @@
+### E-commerce Microservices Test File
+### Use with VS Code REST Client extension or cURL
+
+@baseUrl = http://localhost:8080
+
+### 1. Health Check
+GET {{baseUrl}}/health
+
+###
+
+### 2. Create Order - Check Stock Available
+POST {{baseUrl}}/orders
+Content-Type: application/json
+
+{
+  "product_id": "PROD001",
+  "quantity": 5,
+  "customer_id": "CUST001"
+}
+
+###
+
+### 3. Create Order - Check Another Product
+POST {{baseUrl}}/orders
+Content-Type: application/json
+
+{
+  "product_id": "PROD002",
+  "quantity": 3,
+  "customer_id": "CUST002"
+}
+
+###
+
+### 4. Create Order - Insufficient Stock (will fail)
+POST {{baseUrl}}/orders
+Content-Type: application/json
+
+{
+  "product_id": "PROD001",
+  "quantity": 500,
+  "customer_id": "CUST003"
+}
+
+###
+
+### 5. Get Order Status (replace ORDER_ID with actual order ID)
+GET {{baseUrl}}/orders/ORD-1234567890
+
+###
+
+### cURL Commands for Testing
+
+# Health Check
+# curl -X GET http://localhost:8080/health
+
+# Create Order
+# curl -X POST http://localhost:8080/orders \
+#   -H "Content-Type: application/json" \
+#   -d '{"product_id":"PROD001","quantity":5,"customer_id":"CUST001"}'
+
+# Get Order
+# curl -X GET http://localhost:8080/orders/ORD-1234567890
+
+### gRPC Testing with grpcurl
+# Install grpcurl: https://github.com/fullstorydev/grpcurl
+
+# Check Stock
+# grpcurl -plaintext -d '{"product_id":"PROD001","quantity":5}' \
+#   localhost:50051 ecommerce.InventoryService/CheckStock
+
+# Track Order (streaming)
+# grpcurl -plaintext -d '{"order_id":"ORD-1234567890"}' \
+#   localhost:50051 ecommerce.InventoryService/TrackOrder
+
+### RabbitMQ Management UI
+# http://localhost:15672
+# Username: guest
+# Password: guest

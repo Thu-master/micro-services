@@ -1,0 +1,32 @@
+# Go build artifacts
+*.o
+*.a
+*.so
+.DS_Store
+*.dylib
+
+# Go binary output
+bin/
+dist/
+order-service/order-service
+inventory-service/inventory-service
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.env
+.env.local
+
+# Go dependencies
+vendor/
+go.sum
+
+# Build artifacts
+*.out
+
+# OS files
+Thumbs.db
+.DS_Store
