@@ -35,6 +35,22 @@ var (
 	grpcClient   pb.InventoryServiceClient
 )
 
+// connectRabbitMQWithRetry attempts to connect to RabbitMQ with retry logic
+func connectRabbitMQWithRetry(uri, exchange, queue string, maxRetries int) (*RabbitMQClient, error) {
+	var lastErr error
+	for i := 0; i < maxRetries; i++ {
+		client, err := NewRabbitMQClient(uri, exchange, queue)
+		if err == nil {
+			log.Printf("Successfully connected to RabbitMQ on attempt %d", i+1)
+			return client, nil
+		}
+		lastErr = err
+		log.Printf("RabbitMQ connection attempt %d/%d failed: %v. Retrying in 2 seconds...", i+1, maxRetries, err)
+		time.Sleep(2 * time.Second)
+	}
+	return nil, lastErr
+}
+
 func main() {
 	// Initialize repositories
 	orderRepo = NewOrderRepository()
@@ -63,11 +79,11 @@ func main() {
 	defer conn.Close()
 	grpcClient = pb.NewInventoryServiceClient(conn)
 
-	// Connect to RabbitMQ
+	// Connect to RabbitMQ with retry logic
 	var rabbitErr error
-	rabbitClient, rabbitErr = NewRabbitMQClient(rabbitmqURI, "ecommerce", "order-queue")
+	rabbitClient, rabbitErr = connectRabbitMQWithRetry(rabbitmqURI, "ecommerce", "order-queue", 10)
 	if rabbitErr != nil {
-		log.Fatalf("Failed to connect to RabbitMQ: %v", rabbitErr)
+		log.Fatalf("Failed to connect to RabbitMQ after retries: %v", rabbitErr)
 	}
 	defer rabbitClient.Close()
 

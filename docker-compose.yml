@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   rabbitmq:
     image: rabbitmq:3-management
@@ -13,10 +11,10 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: rabbitmq-diagnostics -q ping
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
       start_period: 10s
 
   inventory-service:
@@ -33,6 +31,7 @@ services:
         condition: service_healthy
     networks:
       - app-network
+    restart: on-failure
 
   order-service:
     build:
@@ -46,10 +45,13 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - rabbitmq
-      - inventory-service
+      rabbitmq:
+        condition: service_healthy
+      inventory-service:
+        condition: service_started
     networks:
       - app-network
+    restart: on-failure
 
 networks:
   app-network:

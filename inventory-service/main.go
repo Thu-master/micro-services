@@ -22,6 +22,22 @@ var (
 	rabbitClient  *RabbitMQClient
 )
 
+// connectRabbitMQWithRetry attempts to connect to RabbitMQ with retry logic
+func connectRabbitMQWithRetry(uri, exchange, queue string, maxRetries int) (*RabbitMQClient, error) {
+	var lastErr error
+	for i := 0; i < maxRetries; i++ {
+		client, err := NewRabbitMQClient(uri, exchange, queue)
+		if err == nil {
+			log.Printf("Successfully connected to RabbitMQ on attempt %d", i+1)
+			return client, nil
+		}
+		lastErr = err
+		log.Printf("RabbitMQ connection attempt %d/%d failed: %v. Retrying in 2 seconds...", i+1, maxRetries, err)
+		time.Sleep(2 * time.Second)
+	}
+	return nil, lastErr
+}
+
 // InventoryServiceImpl implements the InventoryService
 type InventoryServiceImpl struct {
 	pb.UnimplementedInventoryServiceServer
@@ -78,11 +94,11 @@ func main() {
 		rabbitmqURI = "amqp://guest:guest@rabbitmq:5672/"
 	}
 
-	// Connect to RabbitMQ
+	// Connect to RabbitMQ with retry logic
 	var err error
-	rabbitClient, err = NewRabbitMQClient(rabbitmqURI, "ecommerce", "inventory-queue")
+	rabbitClient, err = connectRabbitMQWithRetry(rabbitmqURI, "ecommerce", "inventory-queue", 10)
 	if err != nil {
-		log.Fatalf("Failed to connect to RabbitMQ: %v", err)
+		log.Fatalf("Failed to connect to RabbitMQ after retries: %v", err)
 	}
 	defer rabbitClient.Close()
 

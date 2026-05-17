@@ -6,6 +6,7 @@ name: Build and deploy microservices to Azure Web App
 env:
   AZURE_WEBAPP_NAME: your-app-name  # TODO: set to your Azure Web App name
   REGISTRY: ghcr.io
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 on:
   push:
@@ -42,7 +43,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          context: .
+          context: ./${{ matrix.service }}
           file: ./${{ matrix.service }}/Dockerfile
           tags: ${{ env.REGISTRY }}/${{ env.REPO }}/${{ matrix.service }}:${{ github.sha }}
 
@@ -57,14 +58,9 @@ jobs:
 
     steps:
       - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          images: '${{ env.REGISTRY }}/${{ env.REPO }}/inventory-service:${{ github.sha }},${{ env.REGISTRY }}/${{ env.REPO }}/order-service:${{ github.sha }}'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          images: 'ghcr.io/${{ env.REPO }}:${{ github.sha }}'
+          images: ${{ env.REGISTRY }}/${{ env.REPO }}/inventory-service:${{ github.sha }},${{ env.REGISTRY }}/${{ env.REPO }}/order-service:${{ github.sha }}

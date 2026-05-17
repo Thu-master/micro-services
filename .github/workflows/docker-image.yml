@@ -20,7 +20,7 @@ jobs:
     - name: Build Inventory Service image
       uses: docker/build-push-action@v5
       with:
-        context: .
+        context: ./inventory-service
         file: ./inventory-service/Dockerfile
         push: false
         tags: micro-service/inventory-service:latest
@@ -28,7 +28,7 @@ jobs:
     - name: Build Order Service image
       uses: docker/build-push-action@v5
       with:
-        context: .
+        context: ./order-service
         file: ./order-service/Dockerfile
         push: false
         tags: micro-service/order-service:latest

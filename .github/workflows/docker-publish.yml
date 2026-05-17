@@ -16,6 +16,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
   build-and-push:
@@ -57,7 +58,7 @@ jobs:
       - name: Build and push ${{ matrix.service }} image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./${{ matrix.service }}
           file: ./${{ matrix.service }}/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
