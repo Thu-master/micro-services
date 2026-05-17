@@ -22,7 +22,6 @@ inventory-service/inventory-service
 
 # Go dependencies
 vendor/
-go.sum
 
 # Build artifacts
 *.out
