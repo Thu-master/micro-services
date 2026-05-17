@@ -9,10 +9,26 @@ on:
 jobs:
 
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build Inventory Service image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./inventory-service/Dockerfile
+        push: false
+        tags: micro-service/inventory-service:latest
+    
+    - name: Build Order Service image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./order-service/Dockerfile
+        push: false
+        tags: micro-service/order-service:latest

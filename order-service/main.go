@@ -4,15 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
 	"time"
 
+	"order-service/pb"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"order-service/pb"
 )
 
 const orderServicePort = ":8080"
@@ -24,9 +24,9 @@ type OrderRequest struct {
 }
 
 type OrderResponse struct {
-	ID        string `json:"id"`
-	Status    string `json:"status"`
-	Message   string `json:"message"`
+	ID      string `json:"id"`
+	Status  string `json:"status"`
+	Message string `json:"message"`
 }
 
 var (
@@ -56,7 +56,7 @@ func main() {
 
 	// Connect to gRPC Inventory Service
 	grpcAddr := fmt.Sprintf("%s:%s", inventoryHost, inventoryPort)
-	conn, err := grpc.NewClient(grpcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(grpcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to connect to inventory service: %v", err)
 	}

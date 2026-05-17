@@ -3,14 +3,14 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net"
 	"os"
 	"time"
 
-	"google.golang.org/grpc"
 	"inventory-service/pb"
+
+	"google.golang.org/grpc"
 )
 
 const (
@@ -168,6 +168,3 @@ func startOrderCreatedConsumer() {
 		log.Printf("Consumer error: %v", err)
 	}
 }
-
-
-button.const
